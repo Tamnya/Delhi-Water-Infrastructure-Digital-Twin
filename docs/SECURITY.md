@@ -1,0 +1,5 @@
+# Security status
+
+This is a local development foundation and is not ready for sensitive utility data or public exposure. Import staging and `GET /api/imports/reviews` have no authentication; they can save and return source references and provenance metadata. Use them only with non-sensitive local examples until access controls are added. Authentication, role-based access, authorization, audit logging, encrypted production connections, backup/restore, monitoring, rate limiting and retention enforcement are not implemented.
+
+Use environment variables for secrets. Do not commit `.env`. Restrict database/API access to trusted local development. Before operational data is loaded, define administrator, data manager, researcher, engineer, operator and read-only reviewer permissions; require authenticated imports; audit source changes, promotions, exports and operator actions; protect telemetry against unauthorized injection and replay; and document backup, restore, incident response and retention procedures.

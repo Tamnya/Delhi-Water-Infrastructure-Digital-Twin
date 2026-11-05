@@ -1,0 +1,7 @@
+# Database schema direction
+
+PostGIS 16 / PostgreSQL 16 is configured in `docker-compose.yml`. Alembic migration `0001_import_reviews` creates `import_reviews`, a metadata-only staging table. It stores an explicit `data_domain`, provenance, feature count, SHA-256 digest, timestamp, and `PENDING_REVIEW` status. A unique `(data_domain, dataset_sha256)` constraint prevents silent duplicate staging within each data domain. The GeoJSON body and geometry are not stored. No operational asset table exists yet.
+
+Planned normalized tables: `source`, `dataset`, `asset`, `asset_attribute`, `sensor`, `observation`, `hydraulic_model`, `simulation_run`, `prediction`, `alert`, `inspection`, `audit_event`. Every dataset-derived row will reference its import and source. `asset` will retain the external source identifier, geometry, CRS, and validation state; attribute values live separately so conflicting values and field-level provenance are representable. Telemetry, benchmark records, simulation inputs/outputs, and predictions need namespace/domain isolation and access controls. Review decisions and promotion require a separate authenticated, audited workflow and are not implemented.
+
+Geometry type, SRID, temporal indexes, uniqueness keys, and topology constraints must be selected from the authoritative dataset contract, not guessed before DJB data is received. The migration enables the PostGIS extension but creates no geometry column.
