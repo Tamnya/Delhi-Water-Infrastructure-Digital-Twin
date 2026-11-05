@@ -35,6 +35,7 @@ GitHub Pages hosts static files only. This Pages build runs the research benchma
 - Guided tour: “Take a tour” in the top bar explains the overview, map, help, sources, import review, staff workflows, risk examples, research, simulation, and role preview.
 - GitHub Pages build: the sample simulation runs locally in the browser from the bundled benchmark model; import review storage remains API/database-dependent.
 - Synthetic sensor sandbox: adjust example pressure, flow, and turbidity inputs, inspect their charts, and play a browser-only sample stream. Its separate illustrative risk score is not trained output or live Delhi telemetry.
+- Supervisor pipeline lookup: searchable panel is ready for pipeline IDs, locality, route, and sensor references. It returns an explicit empty state until an authorized asset dataset is available; future linked records can connect map routes, sensor readings, status, and monitoring history.
 - Risk notifications: illustrative SIM-P sample alerts only; there is no live sensor connection or real pipeline risk assessment.
 
 - Delhi pipeline registry: **unavailable — no verified network imported**.

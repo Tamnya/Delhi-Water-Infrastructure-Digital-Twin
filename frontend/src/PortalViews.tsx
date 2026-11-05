@@ -96,6 +96,7 @@ export function EmployeeDashboard({ role, employeeId, tasks, onTaskUpdate, onAss
   return <div className="portal-page">
     <PageHeading eyebrow={role === 'admin' ? 'ADMINISTRATION' : role === 'supervisor' ? 'TEAM OPERATIONS' : 'STAFF WORKSPACE'} title={role === 'admin' ? 'Administrator dashboard' : role === 'supervisor' ? 'Supervisor dashboard' : 'Employee dashboard'} intro={role === 'field' ? `Your assigned sample work · ${employeeId}` : 'Review sample work, progress updates and operational demonstrations.'} badge={role.toUpperCase()}/>
     <DemoNotice>DEMO WORK QUEUE - task records, employee IDs, reports and risk examples are fictional and reset when this page reloads.</DemoNotice>
+    {role === 'supervisor' && <SupervisorPipelineLookup/>}
     <div className="ops-stat-grid"><div><small>{role === 'field' ? 'MY TASKS' : 'SAMPLE TASKS'}</small><b>{visibleTasks.length}</b><span>in this demonstration queue</span></div><div><small>COMPLETED</small><b>{completed}</b><span>marked complete in this session</span></div><div><small>TEAM MEMBERS</small><b>{role === 'field' ? '1' : demoEmployees.length}</b><span>sample employee profiles</span></div><div><small>PIPELINE RECORDS</small><b>0 verified</b><span>inventory stays disconnected</span></div></div>
     {canManage && <section className="portal-card assignment-card"><div className="portal-card-heading"><div><span className="eyebrow">TASK CONTROL</span><h2>Assign a sample task</h2><p>New work appears in the selected employee's demo dashboard.</p></div></div><form className="assignment-form" onSubmit={assignTask}><label>Task description<input value={title} onChange={e => setTitle(e.target.value)} placeholder="Example: inspect sample valve" required/></label><label>Sample zone<select value={zone} onChange={e => setZone(e.target.value)}><option>Sample Zone North</option><option>Sample Zone Central</option><option>Sample Zone South</option></select></label><label>Assign to<select value={assignee} onChange={e => setAssignee(e.target.value)}>{demoEmployees.map(person => <option key={person.id} value={person.id}>{person.name} · {person.id}</option>)}</select></label><button className="button primary" type="submit">Assign sample task</button></form></section>}
     <section className="task-section"><div className="task-section-heading"><div><span className="eyebrow">WORK ORDERS</span><h2>{role === 'field' ? 'My assigned tasks' : 'Team task register'}</h2></div><span className="pill slate">{visibleTasks.length} DEMO RECORDS</span></div>
@@ -104,6 +105,16 @@ export function EmployeeDashboard({ role, employeeId, tasks, onTaskUpdate, onAss
     {role === 'admin' && <AdminPipelineSummary/>}
     {role !== 'field' && <RiskScenarioPanel/>}
   </div>
+}
+
+function SupervisorPipelineLookup() {
+  const [query, setQuery] = useState('')
+  return <section className="portal-card supervisor-pipeline-lookup">
+    <div className="portal-card-heading"><div><span className="eyebrow">PIPELINE MONITORING</span><h2>Find a pipeline</h2><p>Look up an asset by pipeline ID, locality, route, or linked sensor once verified data is available.</p></div><span className="pill amber">0 VERIFIED</span></div>
+    <label className="pipeline-search"><Search size={16}/><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search pipeline ID, locality, route, or sensor" aria-label="Search pipelines"/><span>LOOKUP</span>{query && <button type="button" onClick={() => setQuery('')} aria-label="Clear pipeline search"><X size={14}/></button>}</label>
+    <div className="pipeline-search-empty"><AlertTriangle size={17}/><div><b>{query ? `No verified match for “${query}”` : 'Pipeline lookup is waiting for an approved dataset'}</b><span>No pipeline geometry or searchable asset records are loaded yet. Search results will appear here after source review; routes will not be inferred from the basemap.</span></div></div>
+    <div className="pipeline-detail-preview"><span>WHEN DATA IS AVAILABLE, THIS PANEL CAN SHOW</span><div><b>Pipeline record</b><small>ID · material · diameter · condition</small></div><div><b>Route & map</b><small>Clickable geometry · start and end points</small></div><div><b>Connected sensors</b><small>Sensor ID · latest reading · connection status</small></div><div><b>Monitoring history</b><small>Risk notices · inspections · assigned work</small></div></div>
+  </section>
 }
 
 function TaskCard({ task, canEdit, onUpdate }: { task: PortalTask; canEdit: boolean; onUpdate: (patch: Partial<PortalTask>) => void }) {
@@ -133,7 +144,7 @@ export function TourPanel() {
     { title: 'Data sources', tag: '04 · EVIDENCE', text: 'The catalog records source links, access notes, and license status. A source listing is not proof that the data is complete, current, or approved for operational use.' },
     { title: 'Import review', tag: '05 · DATA INTAKE', text: 'The intake checks GeoJSON structure and records provenance for review. It stores review metadata only; geometry is not saved, approved, or added to the map.' },
     { title: 'Employee dashboard', tag: '06 · STAFF DEMO', text: 'The sample employee sees assigned tasks and can update progress, reports, and remarks. These edits reset on refresh.' },
-    { title: 'Supervisor and admin', tag: '07 · INTERNAL DEMO', text: 'Supervisors and administrators can assign sample tasks and review fictional employee IDs. Admin infrastructure inventory stays empty until verified data arrives.' },
+    { title: 'Supervisor and admin', tag: '07 · INTERNAL DEMO', text: 'Supervisors can assign sample tasks and search the future pipeline registry. It currently has no verified records; with an approved dataset, lookups can connect a pipeline to its clickable map route, sensors, status, and monitoring history. Admin inventory also stays empty until verified data arrives.' },
     { title: 'Risk alerts', tag: '08 · SIMULATED', text: 'The high, moderate, and low risk examples demonstrate warning design only. They are not live readings or operational alerts.' },
     { title: 'Research bench', tag: '09 · BENCHMARK', text: 'The research workspace lists public research references and keeps benchmark evidence separate from Delhi operational assets.' },
     { title: 'Simulation lab', tag: '10 · MODEL + SAMPLE STREAM', text: 'The benchmark classifier uses an anonymized public network dataset, while the sensor sandbox lets you adjust fictional pressure, flow, and turbidity readings, chart a sample stream, and preview a separate illustrative risk rule. Neither predicts Delhi conditions.' },
