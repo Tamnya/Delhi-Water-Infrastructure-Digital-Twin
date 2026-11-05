@@ -136,7 +136,7 @@ export function TourPanel() {
     { title: 'Supervisor and admin', tag: '07 · INTERNAL DEMO', text: 'Supervisors and administrators can assign sample tasks and review fictional employee IDs. Admin infrastructure inventory stays empty until verified data arrives.' },
     { title: 'Risk alerts', tag: '08 · SIMULATED', text: 'The high, moderate, and low risk examples demonstrate warning design only. They are not live readings or operational alerts.' },
     { title: 'Research bench', tag: '09 · BENCHMARK', text: 'The research workspace lists public research references and keeps benchmark evidence separate from Delhi operational assets.' },
-    { title: 'Simulation lab', tag: '10 · MODEL DEMO', text: 'The research classifier is trained on a public anonymized-network benchmark. Its scores are not Delhi leak predictions and its measured holdout performance is weak.' },
+    { title: 'Simulation lab', tag: '10 · MODEL + SAMPLE STREAM', text: 'The benchmark classifier uses an anonymized public network dataset, while the sensor sandbox lets you adjust fictional pressure, flow, and turbidity readings, chart a sample stream, and preview a separate illustrative risk rule. Neither predicts Delhi conditions.' },
     { title: 'Access preview', tag: '11 · IMPORTANT', text: 'The role selector is a client-side demo preview, not real login or secure authorization. Production use needs institution-managed authentication, server-side permissions, audit logs, and privacy controls.' },
   ]
   const active = tour[step]

@@ -34,6 +34,7 @@ GitHub Pages hosts static files only. This Pages build runs the research benchma
 - Role dashboard demo: use the top-right “View as” selector to preview Public, Employee, Supervisor, and Admin pages. Sample tasks, fictional employee IDs, reports, remarks, and risk examples are in-memory demonstration data; refresh resets changes. The selector is not authentication and provides no secure access control.
 - Guided tour: “Take a tour” in the top bar explains the overview, map, help, sources, import review, staff workflows, risk examples, research, simulation, and role preview.
 - GitHub Pages build: the sample simulation runs locally in the browser from the bundled benchmark model; import review storage remains API/database-dependent.
+- Synthetic sensor sandbox: adjust example pressure, flow, and turbidity inputs, inspect their charts, and play a browser-only sample stream. Its separate illustrative risk score is not trained output or live Delhi telemetry.
 - Risk notifications: illustrative SIM-P sample alerts only; there is no live sensor connection or real pipeline risk assessment.
 
 - Delhi pipeline registry: **unavailable — no verified network imported**.

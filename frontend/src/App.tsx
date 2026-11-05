@@ -54,7 +54,7 @@ function App() {
   const [reviewRefresh, setReviewRefresh] = useState(0)
   const reduceMotion = useReducedMotion()
 
-  const visibleNav = navItems.filter(item => role === 'admin' || ['overview', 'map', 'simulation'].includes(item.id) || (role === 'supervisor' && item.id === 'research'))
+  const visibleNav = navItems.filter(item => role === 'admin' || ['overview', 'map', 'sources', 'research', 'simulation'].includes(item.id) || (role === 'supervisor' && item.id === 'research'))
   const changeRole = (next: PortalRole) => { setRole(next); setSection(next === 'public' ? 'overview' : next === 'admin' ? 'admin' : 'employee') }
   const updateTask = (id: string, patch: Partial<PortalTask>) => setTasks(current => current.map(task => task.id === id ? { ...task, ...patch } : task))
   const assignTask = (task: Omit<PortalTask, 'id'>) => setTasks(current => [{ ...task, id: `DEMO-T-${String(Date.now()).slice(-5)}` }, ...current])
@@ -268,6 +268,69 @@ function runBundledScenario(scenarioId: string, threshold: number): SimulationRe
   }
 }
 
+type SyntheticReading = { time: string; pressure: number; flow: number; turbidity: number }
+const initialSyntheticReadings: SyntheticReading[] = [
+  { time: '−5', pressure: 4.6, flow: 81, turbidity: .2 }, { time: '−4', pressure: 4.5, flow: 79, turbidity: .2 },
+  { time: '−3', pressure: 4.4, flow: 80, turbidity: .3 }, { time: '−2', pressure: 4.5, flow: 82, turbidity: .2 },
+  { time: '−1', pressure: 4.3, flow: 78, turbidity: .2 }, { time: 'now', pressure: 4.4, flow: 80, turbidity: .2 },
+]
+
+function SyntheticSensorSandbox() {
+  const [pressure, setPressure] = useState(4.4)
+  const [flow, setFlow] = useState(80)
+  const [turbidity, setTurbidity] = useState(.2)
+  const [readings, setReadings] = useState(initialSyntheticReadings)
+  const [streaming, setStreaming] = useState(false)
+  const pressureDeviation = Math.min(1, Math.abs(pressure - 4.5) / 4.5)
+  const flowDeviation = Math.min(1, Math.abs(flow - 80) / 80)
+  const turbidityDeviation = Math.min(1, turbidity / 5)
+  const riskScore = Math.round(pressureDeviation * 35 + flowDeviation * 35 + turbidityDeviation * 30)
+  const riskLevel = riskScore >= 65 ? 'High' : riskScore >= 35 ? 'Moderate' : 'Low'
+
+  function addReading() {
+    const time = new Date().toLocaleTimeString([], { minute: '2-digit', second: '2-digit' })
+    setReadings(current => [...current, { time, pressure, flow, turbidity }].slice(-18))
+  }
+
+  useEffect(() => {
+    if (!streaming) return
+    const timer = window.setInterval(() => {
+      const time = new Date().toLocaleTimeString([], { minute: '2-digit', second: '2-digit' })
+      const sample = {
+        time,
+        pressure: Math.max(.5, Math.min(8, pressure + (Math.random() - .5) * .3)),
+        flow: Math.max(0, Math.min(150, flow + (Math.random() - .5) * 8)),
+        turbidity: Math.max(0, Math.min(5, turbidity + (Math.random() - .5) * .16)),
+      }
+      setReadings(current => [...current, sample].slice(-18))
+    }, 1400)
+    return () => window.clearInterval(timer)
+  }, [streaming, pressure, flow, turbidity])
+
+  return <section className="synthetic-sandbox panel">
+    <div className="sandbox-heading"><div><span className="simulation-tag"><Activity size={12}/> SYNTHETIC SENSOR SANDBOX</span><h2>Explore changing readings</h2><p>Adjust sample inputs, add readings, or start a browser-only stream to preview a future live-data workflow.</p></div><span className={`stream-status ${streaming ? 'streaming' : ''}`}><i/>{streaming ? 'STREAMING DEMO' : 'PAUSED'}</span></div>
+    <div className="sandbox-callout"><AlertTriangle size={15}/><span>Fictional data and illustrative thresholds. This rule-based score is not the trained benchmark model, a DJB pipe assessment, or a live alert.</span></div>
+    <div className="sandbox-grid">
+      <div className="sandbox-controls">
+        <div className="sandbox-control"><label htmlFor="sample-pressure">Pressure <b>{pressure.toFixed(1)} bar</b></label><input id="sample-pressure" type="range" min="0.5" max="8" step="0.1" value={pressure} onChange={event => setPressure(Number(event.target.value))}/><div><small>0.5 bar</small><small>8 bar</small></div></div>
+        <div className="sandbox-control"><label htmlFor="sample-flow">Flow rate <b>{flow} L/s</b></label><input id="sample-flow" type="range" min="0" max="150" step="1" value={flow} onChange={event => setFlow(Number(event.target.value))}/><div><small>0 L/s</small><small>150 L/s</small></div></div>
+        <div className="sandbox-control"><label htmlFor="sample-turbidity">Turbidity <b>{turbidity.toFixed(1)} NTU</b></label><input id="sample-turbidity" type="range" min="0" max="5" step="0.1" value={turbidity} onChange={event => setTurbidity(Number(event.target.value))}/><div><small>0 NTU</small><small>5 NTU</small></div></div>
+        <div className="sandbox-actions"><button className="button secondary" onClick={addReading}>Add sample reading</button><button className={`button ${streaming ? 'secondary' : 'primary'}`} onClick={() => setStreaming(value => !value)}>{streaming ? 'Stop demo stream' : 'Start demo stream'}</button></div>
+      </div>
+      <div className="sandbox-result"><div className={`sandbox-risk risk-${riskLevel.toLowerCase()}`}><span>{riskLevel} illustrative risk</span><strong>{riskScore}<small>/100</small></strong></div><p>Changing any control recalculates this sample score immediately. Use it to demonstrate how future telemetry could feed a review workflow.</p><div className="sandbox-contributors"><span>Sample inputs</span><b>{pressure.toFixed(1)} bar · {flow} L/s · {turbidity.toFixed(1)} NTU</b></div></div>
+    </div>
+    <div className="sensor-chart-grid"><SyntheticChart title="Pressure" unit="bar" data={readings} field="pressure" max={8} color="#46a181"/><SyntheticChart title="Flow rate" unit="L/s" data={readings} field="flow" max={150} color="#6a8ac8"/><SyntheticChart title="Turbidity" unit="NTU" data={readings} field="turbidity" max={5} color="#d29a48"/></div>
+    <div className="sandbox-footnote">Charts update from sample readings only. The demo stream pauses when you leave this page; no data is sent to a server or retained after refresh.</div>
+  </section>
+}
+
+function SyntheticChart({ title, unit, data, field, max, color }: { title: string; unit: string; data: SyntheticReading[]; field: 'pressure' | 'flow' | 'turbidity'; max: number; color: string }) {
+  const width = 280, height = 92, pad = 8
+  const points = data.map((item, index) => `${pad + index * (width - pad * 2) / Math.max(1, data.length - 1)},${height - pad - item[field] / max * (height - pad * 2)}`).join(' ')
+  const latest = data[data.length - 1]?.[field] ?? 0
+  return <div className="sensor-chart"><div className="chart-title"><span><i style={{ background: color }}/> {title}</span><b>{latest.toFixed(field === 'flow' ? 0 : 1)} <small>{unit}</small></b></div><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${title} history, latest ${latest.toFixed(1)} ${unit}`}><line x1="8" y1="12" x2="272" y2="12"/><line x1="8" y1="46" x2="272" y2="46"/><line x1="8" y1="82" x2="272" y2="82"/><polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>{data.length > 0 && <circle cx={width - pad} cy={height - pad - latest / max * (height - pad * 2)} r="3.5" fill={color}/>}</svg><div className="chart-axis"><span>Earlier</span><span>Latest</span></div></div>
+}
+
 function SimulationView() {
   const [summary, setSummary] = useState<SimulationSummary | null>(null)
   const [selected, setSelected] = useState('leak_signature')
@@ -292,6 +355,7 @@ function SimulationView() {
   return <div className="simulation-page">
     <div className="page-title-row"><div><div className="eyebrow"><span className="eyebrow-dot"/> BENCHMARK RESEARCH · NOT A LIVE TWIN</div><h1 className="compact-title">Leak scenario lab</h1><p className="intro">Explore four held-out cases from an openly licensed water-network research dataset.</p></div><span className="pill purple-pill large-pill"><Activity size={13}/> RESEARCH SIMULATION</span></div>
     <div className="simulation-warning"><ShieldCheck size={19}/><div><b>This model does not represent Delhi’s pipes or predict Delhi leaks.</b><p>It learns from precomputed anomaly scores in an anonymized benchmark. Its output is a benchmark score for similarity to periods within seven days of recorded leaks—not a calibrated probability, diagnosis, or operational alert. On GitHub Pages, the bundled model runs in this browser; backend-dependent intake and review storage are unavailable.</p></div></div>
+    <SyntheticSensorSandbox/>
     {offline ? <div className="review-empty review-offline"><b>Simulation service is unavailable</b><span>Start the API and database with Docker Compose, then refresh this page.</span></div> : !summary ? <div className="review-empty"><span className="review-spinner"/><b>Loading the trained benchmark model…</b></div> : <>
       <section className="simulation-source panel"><div><span className="simulation-tag"><Database size={12}/> TRAINED ON PUBLIC DATA</span><h2>{summary.dataset.name}</h2><p>{summary.dataset.records.toLocaleString()} hourly records · 18 derived anomaly-score inputs · label: {summary.dataset.label}</p></div><a href={summary.dataset.url} target="_blank" rel="noreferrer" className="text-button">Dataset record <ArrowUpRight size={14}/></a></section>
       <div className="simulation-controls panel"><div><span className="eyebrow">DECISION THRESHOLD</span><h2>How sensitive should the flag be?</h2><p>Lower thresholds flag more cases; higher thresholds flag fewer.</p></div><label className="threshold-control"><span>{Math.round(threshold * 100)}<small>%</small></span><input aria-label="Decision threshold" type="range" min="10" max="90" step="5" value={Math.round(threshold * 100)} onChange={e => setThreshold(Number(e.target.value) / 100)}/><small>Flag when benchmark score reaches this level</small></label></div>
